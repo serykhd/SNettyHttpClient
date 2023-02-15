@@ -164,4 +164,8 @@ public class HttpClient implements ShutdownableService {
 
 		logger.info("Closed IO threads!");
 	}
+
+	public boolean isProxying() {
+		return proxyPool != null;
+	}
 }
