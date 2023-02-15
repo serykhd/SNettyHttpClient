@@ -168,4 +168,8 @@ public class HttpClient implements ShutdownableService {
 	public boolean isProxying() {
 		return proxyPool != null;
 	}
+
+	public boolean isDirect() {
+		return proxyPool == null;
+	}
 }
