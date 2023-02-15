@@ -1,13 +1,5 @@
 package ru.serykhd.http;
 
-import ru.serykhd.http.callback.HttpCallback;
-import ru.serykhd.http.handler.HttpHandler;
-import ru.serykhd.http.initializer.HttpClientInitializer;
-import ru.serykhd.http.keepalive.KeepAliveStrategy;
-import ru.serykhd.http.proxy.impl.pool.ProxyPool;
-import ru.serykhd.http.requst.WHttpRequest;
-import ru.serykhd.http.requst.WHttpRequestBuilder;
-import ru.serykhd.http.response.WHttpRequstResponse;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.resolver.dns.DefaultDnsServerAddressStreamProvider;
@@ -16,7 +8,15 @@ import lombok.Getter;
 import lombok.NonNull;
 import ru.serykhd.common.service.ShutdownableService;
 import ru.serykhd.common.thread.SThreadFactory;
+import ru.serykhd.http.callback.HttpCallback;
+import ru.serykhd.http.handler.HttpHandler;
 import ru.serykhd.http.initializer.ConnectionConstants;
+import ru.serykhd.http.initializer.HttpClientInitializer;
+import ru.serykhd.http.keepalive.KeepAliveStrategy;
+import ru.serykhd.http.proxy.impl.pool.ProxyPool;
+import ru.serykhd.http.requst.WHttpRequest;
+import ru.serykhd.http.requst.WHttpRequestBuilder;
+import ru.serykhd.http.response.WHttpRequstResponse;
 import ru.serykhd.logger.InternalLogger;
 import ru.serykhd.logger.impl.InternalLoggerFactory;
 import ru.serykhd.logger.level.Level;
@@ -30,13 +30,14 @@ import java.util.concurrent.TimeUnit;
 @Getter
 public class HttpClient implements ShutdownableService {
 
+
 	private static final DnsAddressResolverGroup dnsResolverGroup = new DnsAddressResolverGroup(TransportUtils.bestType().getDatagramChannelFactory(), DefaultDnsServerAddressStreamProvider.INSTANCE);
 
 	private final InternalLogger logger = InternalLoggerFactory.getInstance(HttpClient.class).setLevel(Level.INFO);
 
 	@Deprecated
 	private final EventLoopGroup group;
-	
+
 	private long connectTimeout = 250;
 	private long readTimeout = 3_000;
 
@@ -51,7 +52,7 @@ public class HttpClient implements ShutdownableService {
 	public HttpClient(ThreadFactory threadFactory) {
 		this(TransportUtils.bestType().newEventLoopGroup(1, threadFactory));
 	}
-	
+
 	public HttpClient(@NonNull EventLoopGroup group) {
 		this.group = group;
 	}
@@ -61,7 +62,7 @@ public class HttpClient implements ShutdownableService {
 		this.connectTimeout = unit.toMillis(timeout);
 		return this;
 	}
-	
+
 	public HttpClient readTimeout(int timeout, @NonNull TimeUnit unit) {
 		this.readTimeout = unit.toMillis(timeout);
 		return this;
@@ -112,14 +113,14 @@ public class HttpClient implements ShutdownableService {
 		}
 
 		//
-    	ChannelFutureListener listener = (future) -> {
-    		if (future.isSuccess()) {
-        		Channel ch = future.channel();
+		ChannelFutureListener listener = (future) -> {
+			if (future.isSuccess()) {
+				Channel ch = future.channel();
 
-                ch.writeAndFlush(request.getRequest(), ch.voidPromise());
-                
-                return;
-    		}
+				ch.writeAndFlush(request.getRequest(), ch.voidPromise());
+
+				return;
+			}
 
 			future.channel().close();
 
@@ -134,7 +135,7 @@ public class HttpClient implements ShutdownableService {
 			}
 
 			request.getRequstBuilder().getCallback().cause(future.cause());
-    	};
+		};
 
 		Bootstrap bootstrap = new Bootstrap()
 				.channelFactory(TransportUtils.bestType().getSocketChannelFactory())
@@ -144,7 +145,7 @@ public class HttpClient implements ShutdownableService {
 				.remoteAddress(request.getRequstBuilder().getUri().getHost(), request.getRequstBuilder().getPort())
 				.resolver(dnsResolverGroup);
 
-        return bootstrap.connect().addListener(listener);
+		return bootstrap.connect().addListener(listener);
 	}
 
 	@Override
@@ -157,7 +158,8 @@ public class HttpClient implements ShutdownableService {
 			try {
 				group.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
 				break;
-			} catch (InterruptedException ignored) {}
+			} catch (InterruptedException ignored) {
+			}
 		}
 
 		logger.info("Closed IO threads!");
